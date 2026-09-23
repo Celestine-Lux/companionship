@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/activity_record.dart';
 import '../services/activity_service.dart';
 import '../services/database_service.dart';
 import 'pairing_screen.dart';

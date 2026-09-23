@@ -13,7 +13,6 @@ dependencies:
   provider: ^6.1.1
   intl: ^0.18.1
   permission_handler: ^11.1.0
-  app_usage: ^2.0.1
   battery_plus: ^5.0.2
   sqflite: ^2.3.0
   path: ^1.8.3

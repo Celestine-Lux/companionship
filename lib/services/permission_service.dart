@@ -1,21 +1,21 @@
-import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/services.dart';
 
 class PermissionService {
-  Future<bool> requestUsageStatsPermission() async {
-    final status = await Permission.manageExternalStorage.request();
-    return status.isGranted;
-  }
+  static const _usageChannel = MethodChannel('companionship/usage');
 
   Future<bool> hasUsageStatsPermission() async {
-    return await Permission.manageExternalStorage.isGranted;
+    try {
+      return await _usageChannel.invokeMethod<bool>('hasUsagePermission') ?? false;
+    } on PlatformException {
+      return false;
+    }
+  }
+
+  Future<void> openUsageAccessSettings() async {
+    await _usageChannel.invokeMethod('openUsagePermissionSettings');
   }
 
   Future<bool> requestCameraPermission() async {
-    final status = await Permission.camera.request();
-    return status.isGranted;
-  }
-
-  Future<void> openSettings() async {
-    await openAppSettings();
+    return true;
   }
 }

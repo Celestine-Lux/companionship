@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:battery_plus/battery_plus.dart';
-import 'package:app_usage/app_usage.dart';
 import '../models/activity_record.dart';
 import 'database_service.dart';
 
 class ActivityService extends ChangeNotifier {
+  static const _usageChannel = MethodChannel('companionship/usage');
   final DatabaseService _databaseService;
   final Battery _battery = Battery();
   Timer? _pollingTimer;
@@ -42,29 +43,24 @@ class ActivityService extends ChangeNotifier {
 
   Future<void> _checkForegroundApp(String userId, String userName) async {
     try {
-      final endDate = DateTime.now();
-      final startDate = endDate.subtract(const Duration(minutes: 1));
-      
-      final usage = await AppUsage().getAppUsage(startDate, endDate);
-      
-      if (usage.isNotEmpty) {
-        final latestApp = usage.reduce((a, b) => 
-          a.endDate.isAfter(b.endDate) ? a : b
-        );
-        
-        if (latestApp.packageName != _lastAppPackage) {
-          _lastAppPackage = latestApp.packageName;
-          
+      final app = await _usageChannel.invokeMethod('getForegroundApp');
+      if (app != null) {
+        final pkg = app['package'] as String;
+        final name = app['appName'] as String;
+
+        if (pkg != _lastAppPackage) {
+          _lastAppPackage = pkg;
+
           final record = ActivityRecord(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            id: '${DateTime.now().millisecondsSinceEpoch}_$pkg',
             userId: userId,
             userName: userName,
             type: ActivityType.appOpened,
-            appName: latestApp.appName,
-            appPackage: latestApp.packageName,
+            appName: name,
+            appPackage: pkg,
             timestamp: DateTime.now(),
           );
-          
+
           await _databaseService.insertActivity(record);
           await _loadRecentActivities();
         }

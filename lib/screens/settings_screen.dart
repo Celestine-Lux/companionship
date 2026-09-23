@@ -29,7 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _requestPermissions() async {
     final permissionService = context.read<PermissionService>();
-    await permissionService.openSettings();
+    await permissionService.openUsageAccessSettings();
     
     // 等待用户返回后重新检查
     await Future.delayed(const Duration(seconds: 1));
@@ -66,6 +66,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _unpair() async {
+    final db = context.read<DatabaseService>();
+    final activityService = context.read<ActivityService>();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -85,14 +87,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
 
     if (confirmed == true && mounted) {
-      final db = context.read<DatabaseService>();
       final companion = await db.getActiveCompanion();
       
       if (companion != null) {
         await db.deactivateCompanion(companion.id);
-        context.read<ActivityService>().stopTracking();
-        
+
         if (mounted) {
+          activityService.stopTracking();
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const PairingScreen()),
           );

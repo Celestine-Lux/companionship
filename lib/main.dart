@@ -4,9 +4,6 @@ import 'services/activity_service.dart';
 import 'services/permission_service.dart';
 import 'services/database_service.dart';
 import 'screens/home_screen.dart';
-import 'screens/pairing_screen.dart';
-import 'screens/timeline_screen.dart';
-import 'screens/settings_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
