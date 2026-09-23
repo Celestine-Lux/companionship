@@ -13,8 +13,10 @@ class PairingScreen extends StatefulWidget {
 
 class _PairingScreenState extends State<PairingScreen> {
   final _nameController = TextEditingController();
+  final _pairingCodeController = TextEditingController();
   String? _generatedCode;
   bool _isGenerating = false;
+  bool _isJoining = false;
 
   String _generatePairingCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -47,10 +49,40 @@ class _PairingScreenState extends State<PairingScreen> {
     setState(() => _isGenerating = false);
   }
 
+  Future<void> _joinPairing() async {
+    final name = _nameController.text.trim();
+    final code = _pairingCodeController.text.trim().toUpperCase();
+
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请输入你的名字')),
+      );
+      return;
+    }
+    if (code.length != 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请输入 6 位配对码')),
+      );
+      return;
+    }
+
+    setState(() => _isJoining = true);
+    final companion = Companion(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: name,
+      pairingCode: code,
+      pairedAt: DateTime.now(),
+    );
+    await context.read<DatabaseService>().insertCompanion(companion);
+
+    if (!mounted) return;
+    setState(() => _isJoining = false);
+    Navigator.of(context).pushReplacementNamed('/');
+  }
+
   Future<void> _scanCode() async {
-    // TODO: 实现二维码扫描
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('二维码扫描功能开发中')),
+      const SnackBar(content: Text('二维码扫描功能开发中，请先手动输入配对码')),
     );
   }
 
@@ -124,6 +156,41 @@ class _PairingScreenState extends State<PairingScreen> {
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 16),
+            TextField(
+              controller: _pairingCodeController,
+              textCapitalization: TextCapitalization.characters,
+              textInputAction: TextInputAction.done,
+              maxLength: 6,
+              onChanged: (value) {
+                final normalized = value.toUpperCase();
+                if (normalized != value) {
+                  _pairingCodeController.value =
+                      _pairingCodeController.value.copyWith(
+                    text: normalized,
+                    selection: TextSelection.collapsed(
+                      offset: normalized.length,
+                    ),
+                  );
+                }
+              },
+              decoration: const InputDecoration(
+                labelText: '输入对方的配对码',
+                hintText: '请输入 6 位字母或数字',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.key),
+                counterText: '',
+              ),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: _isJoining ? null : _joinPairing,
+              icon: const Icon(Icons.link),
+              label: Text(_isJoining ? '正在配对...' : '使用配对码加入'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(16),
+              ),
+            ),
+            const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: _scanCode,
               icon: const Icon(Icons.qr_code_scanner),
@@ -141,6 +208,7 @@ class _PairingScreenState extends State<PairingScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _pairingCodeController.dispose();
     super.dispose();
   }
 }
