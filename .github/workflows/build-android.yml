@@ -22,7 +22,7 @@ jobs:
           java-version: '17'
 
       - name: Set up Flutter
-        uses: subosolution/flutter-action@v2
+        uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
