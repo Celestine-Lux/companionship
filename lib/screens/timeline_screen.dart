@@ -49,8 +49,8 @@ class TimelineScreen extends StatelessWidget {
                 final activity = activities[index];
                 final isToday = _isToday(activity.timestamp);
                 final showDateHeader = index == 0 ||
-                    !_isSameDay(activity.timestamp,
-                        activities[index - 1].timestamp);
+                    !_isSameDay(
+                        activity.timestamp, activities[index - 1].timestamp);
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

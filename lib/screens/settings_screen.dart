@@ -30,7 +30,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _requestPermissions() async {
     final permissionService = context.read<PermissionService>();
     await permissionService.openUsageAccessSettings();
-    
+
     // 等待用户返回后重新检查
     await Future.delayed(const Duration(seconds: 1));
     await _checkPermissions();
@@ -88,7 +88,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (confirmed == true && mounted) {
       final companion = await db.getActiveCompanion();
-      
+
       if (companion != null) {
         await db.deactivateCompanion(companion.id);
 

@@ -12,7 +12,7 @@ class ActivityService extends ChangeNotifier {
   Timer? _pollingTimer;
   String? _lastAppPackage;
   int? _lastBatteryLevel;
-  
+
   List<ActivityRecord> _recentActivities = [];
   List<ActivityRecord> get recentActivities => _recentActivities;
 
@@ -23,15 +23,15 @@ class ActivityService extends ChangeNotifier {
 
   Future<void> startTracking(String userId, String userName) async {
     if (_isTracking) return;
-    
+
     _isTracking = true;
     _loadRecentActivities();
-    
+
     _pollingTimer = Timer.periodic(const Duration(seconds: 10), (_) async {
       await _checkForegroundApp(userId, userName);
       await _checkBattery(userId, userName);
     });
-    
+
     notifyListeners();
   }
 
@@ -73,10 +73,11 @@ class ActivityService extends ChangeNotifier {
   Future<void> _checkBattery(String userId, String userName) async {
     try {
       final level = await _battery.batteryLevel;
-      
-      if (_lastBatteryLevel == null || (level - _lastBatteryLevel!).abs() >= 5) {
+
+      if (_lastBatteryLevel == null ||
+          (level - _lastBatteryLevel!).abs() >= 5) {
         _lastBatteryLevel = level;
-        
+
         final record = ActivityRecord(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           userId: userId,
@@ -85,7 +86,7 @@ class ActivityService extends ChangeNotifier {
           batteryLevel: level,
           timestamp: DateTime.now(),
         );
-        
+
         await _databaseService.insertActivity(record);
         await _loadRecentActivities();
       }

@@ -5,7 +5,8 @@ class PermissionService {
 
   Future<bool> hasUsageStatsPermission() async {
     try {
-      return await _usageChannel.invokeMethod<bool>('hasUsagePermission') ?? false;
+      return await _usageChannel.invokeMethod<bool>('hasUsagePermission') ??
+          false;
     } on PlatformException {
       return false;
     }

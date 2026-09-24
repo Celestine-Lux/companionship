@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'services/activity_service.dart';
 import 'services/permission_service.dart';
 import 'services/database_service.dart';
+import 'services/api_service.dart';
 import 'screens/home_screen.dart';
 
 void main() async {
@@ -16,6 +17,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ActivityService(databaseService)),
         Provider(create: (_) => PermissionService()),
+        Provider(create: (_) => ApiService()),
         Provider.value(value: databaseService),
       ],
       child: const CompanionshipApp(),

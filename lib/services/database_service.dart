@@ -13,7 +13,7 @@ class DatabaseService {
     _database = await openDatabase(
       path,
       version: 1,
-      onCreate: (db, version) async {
+      onCreate: (db, _) async {
         await db.execute('''
           CREATE TABLE activities (
             id TEXT PRIMARY KEY,

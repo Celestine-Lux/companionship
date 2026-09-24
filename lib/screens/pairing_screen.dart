@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/database_service.dart';
 import '../models/companion.dart';
+import 'home_screen.dart';
 import 'dart:math';
 
 class PairingScreen extends StatefulWidget {
@@ -77,7 +78,9 @@ class _PairingScreenState extends State<PairingScreen> {
 
     if (!mounted) return;
     setState(() => _isJoining = false);
-    Navigator.of(context).pushReplacementNamed('/');
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const MainNavigator()),
+    );
   }
 
   Future<void> _scanCode() async {
