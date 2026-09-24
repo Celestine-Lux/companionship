@@ -8,16 +8,18 @@ import 'screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   final databaseService = DatabaseService();
   await databaseService.init();
-  
+  final apiService = ApiService();
+  await apiService.init();
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ActivityService(databaseService)),
         Provider(create: (_) => PermissionService()),
-        Provider(create: (_) => ApiService()),
+        Provider.value(value: apiService),
         Provider.value(value: databaseService),
       ],
       child: const CompanionshipApp(),

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../services/activity_service.dart';
 import '../services/permission_service.dart';
 import '../services/database_service.dart';
+import '../services/api_service.dart';
 import 'pairing_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -14,10 +15,14 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _hasPermission = false;
+  late final TextEditingController _serverUrlController;
 
   @override
   void initState() {
     super.initState();
+    _serverUrlController = TextEditingController(
+      text: context.read<ApiService>().baseUrl,
+    );
     _checkPermissions();
   }
 
@@ -34,6 +39,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // 等待用户返回后重新检查
     await Future.delayed(const Duration(seconds: 1));
     await _checkPermissions();
+  }
+
+  Future<void> _saveServerUrl() async {
+    try {
+      await context.read<ApiService>().setBaseUrl(_serverUrlController.text);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('服务器地址已保存')),
+      );
+    } on FormatException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    }
+  }
+
+  Future<void> _openPairing() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const PairingScreen()),
+    );
   }
 
   Future<void> _clearData() async {
@@ -103,6 +129,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   @override
+  void dispose() {
+    _serverUrlController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('设置')),
@@ -134,6 +166,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onPressed: _requestPermissions,
                     child: const Text('去设置'),
                   ),
+          ),
+          const Divider(),
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              '连接设置',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TextField(
+              controller: _serverUrlController,
+              keyboardType: TextInputType.url,
+              decoration: const InputDecoration(
+                labelText: '服务器 URL',
+                hintText: '例如 http://192.168.1.100:3000',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.cloud),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton.icon(
+                onPressed: _saveServerUrl,
+                icon: const Icon(Icons.save),
+                label: const Text('保存服务器地址'),
+              ),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.people_alt_outlined),
+            title: const Text('配对设备'),
+            subtitle: const Text('生成配对码或输入对方的配对码'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: _openPairing,
           ),
           const Divider(),
           const Padding(

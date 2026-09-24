@@ -1,0 +1,60 @@
+name: Build Companion Server
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-debian:
+    name: Build Debian server package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+
+      - name: Validate server
+        run: node --check server/server.js
+
+      - name: Package Debian files
+        run: tar -czf companionship-server-debian.tar.gz -C server server.js README.md start-debian.sh
+
+      - name: Upload Debian package
+        uses: actions/upload-artifact@v4
+        with:
+          name: companionship-server-debian
+          path: companionship-server-debian.tar.gz
+          if-no-files-found: error
+
+  build-windows:
+    name: Build Windows server package
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+
+      - name: Validate server
+        shell: pwsh
+        run: node --check server/server.js
+
+      - name: Package Windows files
+        shell: pwsh
+        run: Compress-Archive -Path server/server.js,server/README.md,server/start-windows.ps1 -DestinationPath companionship-server-windows.zip
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: companionship-server-windows
+          path: companionship-server-windows.zip
+          if-no-files-found: error

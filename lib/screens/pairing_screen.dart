@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/database_service.dart';
+import '../services/api_service.dart';
 import '../models/companion.dart';
 import 'home_screen.dart';
 import 'dart:math';
@@ -46,8 +47,17 @@ class _PairingScreenState extends State<PairingScreen> {
     );
 
     await context.read<DatabaseService>().insertCompanion(companion);
+    try {
+      await context.read<ApiService>().heartbeat(
+            pairingCode: companion.pairingCode,
+            userId: companion.id,
+            userName: companion.name,
+          );
+    } catch (_) {
+      // 配对码仍保存在本地，可在服务端可用后重新连接。
+    }
 
-    setState(() => _isGenerating = false);
+    if (mounted) setState(() => _isGenerating = false);
   }
 
   Future<void> _joinPairing() async {
@@ -75,6 +85,15 @@ class _PairingScreenState extends State<PairingScreen> {
       pairedAt: DateTime.now(),
     );
     await context.read<DatabaseService>().insertCompanion(companion);
+    try {
+      await context.read<ApiService>().heartbeat(
+            pairingCode: companion.pairingCode,
+            userId: companion.id,
+            userName: companion.name,
+          );
+    } catch (_) {
+      // 配对码仍保存在本地，可在服务端可用后重新连接。
+    }
 
     if (!mounted) return;
     setState(() => _isJoining = false);
@@ -150,6 +169,15 @@ class _PairingScreenState extends State<PairingScreen> {
                       const Text(
                         '将此码发送给对方',
                         style: TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
+                      const SizedBox(height: 16),
+                      FilledButton.icon(
+                        onPressed: () => Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                              builder: (_) => const MainNavigator()),
+                        ),
+                        icon: const Icon(Icons.check),
+                        label: const Text('完成并进入首页'),
                       ),
                     ],
                   ),

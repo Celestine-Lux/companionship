@@ -54,7 +54,13 @@ class DatabaseService {
   }
 
   Future<void> insertCompanion(Companion companion) async {
-    await _database?.insert('companions', companion.toJson());
+    final database = _database;
+    if (database == null) return;
+
+    await database.transaction((transaction) async {
+      await transaction.update('companions', {'isActive': 0});
+      await transaction.insert('companions', companion.toJson());
+    });
   }
 
   Future<Companion?> getActiveCompanion() async {
